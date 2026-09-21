@@ -1,0 +1,21 @@
+output_dir: experiments/cap_sweep/knapsack/qwen3_8b/tmax/PS_cap40_T80
+run_name: PS_cap40_T80
+seed_start: 21812
+cache_db_path: experiments/cap_sweep/knapsack/qwen3_8b/tmax/cache_PS_cap40_T80.sqlite
+
+agents:
+  - name: PS_cap40_T80
+    max_turns: 80
+    timeout_s: 6000
+    max_tool_calls: 40
+    persistent_state: false
+    llm:
+      model: openai/persistent
+      cache_enabled: false
+      max_concurrent_requests: 16
+      max_tokens: 8192
+      temperature: 0.2
+      timeout_s: 600
+
+task_families:
+  - knapsack

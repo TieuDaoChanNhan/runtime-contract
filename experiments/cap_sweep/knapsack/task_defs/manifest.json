@@ -1,0 +1,139 @@
+{
+  "created_at": "2026-06-21T03:40:45.475384+00:00",
+  "run_name": "knap_med_capsweep",
+  "schema_version": "codeact_runtime.taskgen.manifest.v1",
+  "settings": {
+    "cache_db_path": "cache/llm_cache.sqlite",
+    "knapsack": {
+      "capacity_ratio_range": [
+        0.35,
+        0.5
+      ],
+      "classes": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z"
+      ],
+      "force_nonempty_optimum": true,
+      "n_items_range": [
+        40,
+        65
+      ],
+      "num_allowed_classes": 4,
+      "num_tasks": 25,
+      "value_range": [
+        10,
+        300
+      ],
+      "weight_range": [
+        5,
+        35
+      ]
+    },
+    "llm": {
+      "backoff_base_s": 0.5,
+      "backoff_max_s": 30.0,
+      "cache_enabled": true,
+      "jitter_s": 0.2,
+      "max_concurrent_requests": 8,
+      "max_retries": 6,
+      "max_tokens": 1024,
+      "model": "gpt-4o-mini",
+      "temperature": 0.2,
+      "timeout_s": 120.0
+    },
+    "llm_enabled": false,
+    "max_workers": 16,
+    "navigation": {
+      "decoy_count_range": [
+        3,
+        5
+      ],
+      "extra_edge_factor_range": [
+        0.18,
+        0.35
+      ],
+      "extra_nodes_range": [
+        8,
+        18
+      ],
+      "horizon_range": [
+        10,
+        25
+      ],
+      "key_hint_radius": 2,
+      "max_steps_multiplier": 1.3,
+      "num_tasks": 0,
+      "probe_budget_multiplier": 1.0,
+      "probe_cap_fraction": 0.28,
+      "reject_singleton_l0_hint": true,
+      "trap_count_range": [
+        1,
+        2
+      ],
+      "trap_prob": 0.3
+    },
+    "out_dir": "experiments/cap_sweep/knapsack/task_defs",
+    "rule_diagnosis": {
+      "domain_range": [
+        0,
+        999
+      ],
+      "exceptions_count_range": [
+        0,
+        0
+      ],
+      "include_piecewise_affine_mod": false,
+      "label_noise": 0.25,
+      "max_hypothesis_exceptions": 0,
+      "micro_interval_count": 0,
+      "micro_interval_len_range": [
+        3,
+        4
+      ],
+      "min_interval_len": 6,
+      "mod_m_choices": [
+        11,
+        13
+      ],
+      "num_tasks": 0,
+      "online": true,
+      "online_submit_table": false,
+      "probe_budget_range": [
+        27,
+        32
+      ],
+      "probes_per_turn": null,
+      "require_multi_breakpoint": false,
+      "reveal_family_in_public": false,
+      "rule_library_size": 0,
+      "stream_batch_size": 18,
+      "stream_grid_size": 36
+    },
+    "run_name": "knap_med_capsweep",
+    "seed_start": 21812
+  }
+}

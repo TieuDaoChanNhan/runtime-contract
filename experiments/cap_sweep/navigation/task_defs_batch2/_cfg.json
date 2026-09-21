@@ -1,0 +1,54 @@
+{
+  "out_dir": "experiments/cap_sweep/navigation/task_defs",
+  "run_name": "nav_med_capsweep",
+  "seed_start": 21812,
+  "max_workers": 16,
+  "llm": {
+    "enabled": false,
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 1024,
+    "timeout_s": 120,
+    "max_concurrent_requests": 8,
+    "max_retries": 6,
+    "backoff_base_s": 0.5,
+    "backoff_max_s": 30.0,
+    "jitter_s": 0.2
+  },
+  "knapsack": {
+    "num_tasks": 0
+  },
+  "navigation": {
+    "num_tasks": 16,
+    "horizon_range": [
+      10,
+      25
+    ],
+    "extra_nodes_range": [
+      8,
+      18
+    ],
+    "extra_edge_factor_range": [
+      0.18,
+      0.35
+    ],
+    "max_steps_multiplier": 1.3,
+    "trap_count_range": [
+      1,
+      2
+    ],
+    "probe_cap_fraction": 0.28,
+    "decoy_count_range": [
+      3,
+      5
+    ],
+    "key_hint_radius": 2,
+    "reject_singleton_l0_hint": true,
+    "neighbors_batch_max": 2
+  },
+  "rule_diagnosis": {
+    "num_tasks": 0
+  },
+  "derived_from": "experiments/cap_sweep/navigation/task_defs",
+  "derivation": "copied verbatim; only public.neighbors_batch_max (and its notes line) changed"
+}

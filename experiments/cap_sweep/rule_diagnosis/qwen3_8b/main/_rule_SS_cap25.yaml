@@ -1,0 +1,21 @@
+output_dir: experiments/cap_sweep/rule_diagnosis/qwen3_8b/main/rule_SS_cap25
+run_name: rule_SS_cap25
+seed_start: 21812
+cache_db_path: experiments/cap_sweep/rule_diagnosis/qwen3_8b/main/cache_rule_SS_cap25.sqlite
+
+agents:
+  - name: rule_SS_cap25
+    max_turns: 40
+    timeout_s: 3000
+    max_tool_calls: 25
+    persistent_state: false
+    llm:
+      model: openai/rs
+      cache_enabled: false
+      max_concurrent_requests: 16
+      max_tokens: 8192
+      temperature: 0.2
+      timeout_s: 600
+
+task_families:
+  - rule_diagnosis

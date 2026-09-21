@@ -1,0 +1,51 @@
+defaults:
+  task_families: [knapsack]
+  agent:
+    agent_type: codeact
+    max_turns: 40
+    timeout_s: 300
+    max_tool_calls: 25
+
+benchmark:
+  seed_start: 21812
+  max_concurrent_runs: 30
+  llm:
+    temperature: 0.2
+    max_tokens: 12288
+    timeout_s: 300
+    max_concurrent_requests: 30
+    max_retries: 3
+    backoff_base_s: 1.0
+    backoff_max_s: 30.0
+    jitter_s: 0.5
+    cache_enabled: false
+  runtimes:
+    persistent:
+      persistent_state: true
+    stateless:
+      persistent_state: false
+  models:
+    base:
+      model: openai/qwen3-8b
+    persistent:
+      model: openai/qwen3-8b-persistent-lora
+    stateless:
+      model: openai/qwen3-8b-stateless-lora
+  difficulties: [easy, medium]
+
+teacher:
+  output_dir: data/traces/knapsack/gemini-3-flash/
+  seed_start: 42
+  cache_db_path: ./cache/llm_cache.sqlite
+  llm:
+    model: gemini/gemini-3-flash-preview
+    cache_enabled: true
+    max_concurrent_requests: 4
+  configs:
+    persistent:
+      run_name: persistent_state
+      agent_name: persistent-gemini-3-flash
+    stateless:
+      run_name: stateless
+      agent_name: stateless-gemini-3-flash
+      persistent_state: false

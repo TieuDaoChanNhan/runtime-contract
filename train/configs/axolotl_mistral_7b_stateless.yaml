@@ -1,0 +1,84 @@
+base_model: mistralai/Mistral-7B-v0.3
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+
+# Mistral-7B-v0.3's tokenizer ships no chat_template - use axolotl's built-in
+# mistral_v2v3 template.
+chat_template: mistral_v2v3
+
+# QLoRA - 4-bit quantized base model
+load_in_8bit: false
+load_in_4bit: true
+strict: false
+
+# BitsAndBytes 4-bit config
+bnb_4bit_compute_dtype: bfloat16
+bnb_4bit_use_double_quant: true
+bnb_4bit_quant_type: nf4
+
+# Dataset - CodeAct stateless traces (assistant-only training)
+datasets:
+  - path: data/traces.jsonl
+    type: chat_template
+    field_messages: messages
+    message_field_role: role
+    message_field_content: content
+    roles_to_train:
+      - assistant
+
+dataset_prepared_path: out/prepared_dataset_stateless
+val_set_size: 0.04
+output_dir: out/mistral-7b-stateless
+
+# LoRA config
+adapter: lora
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+lora_target_linear: false
+
+# Sequence length
+sequence_len: 16384
+sample_packing: false
+pad_to_sequence_len: true
+
+# Training - batch_size=1 needed for long context even with QLoRA
+gradient_accumulation_steps: 16
+micro_batch_size: 1
+num_epochs: 3
+optimizer: adamw_torch
+lr_scheduler: cosine
+learning_rate: 1e-4
+warmup_ratio: 0.03
+weight_decay: 0.01
+
+# Memory optimizations
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+flash_attention: false
+
+# Logging and checkpoints
+logging_steps: 1
+save_strategy: epoch
+eval_steps: 5
+save_total_limit: 3
+
+# Precision
+bf16: true
+tf32: true
+
+# Wandb (offline on SLURM, synced later)
+wandb_watch:
+wandb_log_model:
+
+# Misc
+seed: 3407

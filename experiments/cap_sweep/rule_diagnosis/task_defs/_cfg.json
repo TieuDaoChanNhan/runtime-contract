@@ -1,0 +1,53 @@
+{
+ "out_dir": "experiments/cap_sweep/rule_diagnosis/task_defs",
+ "run_name": "rule_off_capsweep",
+ "seed_start": 21812,
+ "max_workers": 16,
+ "llm": {
+  "enabled": false,
+  "model": "gpt-4o-mini",
+  "temperature": 0.2,
+  "max_tokens": 1024,
+  "timeout_s": 120,
+  "max_concurrent_requests": 8,
+  "max_retries": 6,
+  "backoff_base_s": 0.5,
+  "backoff_max_s": 30.0,
+  "jitter_s": 0.2
+ },
+ "knapsack": {
+  "num_tasks": 0
+ },
+ "navigation": {
+  "num_tasks": 0
+ },
+ "rule_diagnosis": {
+  "num_tasks": 16,
+  "mod_m_choices": [
+   7,
+   8,
+   9,
+   11
+  ],
+  "domain_range": [
+   0,
+   999
+  ],
+  "probe_budget_range": [
+   28,
+   33
+  ],
+  "min_interval_len": 6,
+  "micro_interval_count": 0,
+  "rule_library_size": 0,
+  "reveal_family_in_public": false,
+  "exceptions_count_range": [
+   0,
+   0
+  ],
+  "max_hypothesis_exceptions": 0,
+  "include_piecewise_affine_mod": false,
+  "require_multi_breakpoint": true,
+  "online": false
+ }
+}

@@ -1,0 +1,24 @@
+output_dir: experiments/cap_sweep/knapsack/qwen3_8b/checkpoint/PSckpt_rerun_cap25
+run_name: PSckpt_rerun_cap25
+seed_start: 21812
+max_concurrent_runs: 4
+cache_db_path: experiments/cap_sweep/knapsack/qwen3_8b/checkpoint/cache_PSckpt_rerun_cap25.sqlite
+
+agents:
+  - name: PSckpt_rerun_cap25
+    max_turns: 40
+    timeout_s: 3000
+    max_tool_calls: 25
+    persistent_state: false
+    state_carryover_on_cap: true
+    llm:
+      model: openai/persistent
+      cache_enabled: false
+      max_concurrent_requests: 16
+      max_tokens: 8192
+      temperature: 0.2
+      timeout_s: 600
+      seed: 20260818
+
+task_families:
+  - knapsack

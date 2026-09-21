@@ -1,0 +1,140 @@
+--- EXAMPLE: RESET STATE ---
+Task: Store items and sum values.
+
+Turn 1
+Assistant:
+1. I will initialize the list `items` and print its contents so I can retrieve them next turn.
+```python
+items = [10, 20]
+
+def foo(items):
+    return items + items
+
+# State must be printed to survive the reset
+print(f"STATE: items={items}")
+print(len(items))
+```
+User: {"observation": {"success": true, "result": null, "output": "STATE: items=[10, 20]
+2
+", "error": null}, "runtime_state": {"runtime": "reset", "active_globals": [], "last_step_globals": ["items", "foo"]}}
+
+Turn 2
+Assistant:
+
+The environment has reset and `active_globals` is empty. I will read the previous observation, redefine `items` and `foo`, then compute the total.
+
+```python
+# Re-initializing based on previous observation
+items = [10, 20]
+
+def foo(items):
+    return items + items
+
+items = foo(items)
+total = sum(items)
+print(f"Total: {total}")
+
+finish()
+```
+User: {"observation": {"success": true, "result": null, "output": "Total: 60
+", "error": null}, "runtime_state": {"runtime": "reset", "active_globals": [], "last_step_globals": ["items", "foo", "total"]}} --- EXAMPLE END ---
+
+--- EXAMPLE: ITERATIVE EXPLORATION ---
+Task: Inspect 10 items from a list, 2 at a time.
+
+Turn 1
+Assistant:
+
+I will define the items and process the first batch. Because state resets, I must explicitly print my progress and the inspected list.
+
+```python
+
+# Setup data
+items = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+inspected = []
+
+# Process first 2
+batch = items[0:2]
+for x in batch:
+    # Mock inspection logic
+    inspected.append(x)
+    print(f"Inspected {x}")
+    
+print(f"Progress: {len(inspected)}/{len(items)}")
+# Print explicit state for the next turn
+print(f"STATE: inspected={inspected}")
+```
+User: {"observation": {"success": true, "result": null, "output": "Inspected 100
+Inspected 200
+Progress: 2/10
+STATE: inspected=[100, 200]
+", "error": null}, "runtime_state": {"runtime": "reset", "active_globals": [], "last_step_globals": ["batch", "inspected", "items", "x"]}}
+
+Turn 2
+Assistant:
+
+Variables were reset and `active_globals` is empty. From the previous observation, I see inspected=[100, 200]. I will redefine data, resume at index 2, and process the next batch.
+
+```python
+import json
+
+items = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+# Restoring state from previous output
+inspected = [100, 200] 
+
+start = len(inspected)
+batch = items[start : start + 2]
+for x in batch:
+    inspected.append(x)
+    print(f"Inspected {x}")
+
+print(f"Progress: {len(inspected)}/{len(items)}")
+print(f"STATE: inspected={inspected}")
+```
+User: {"observation": {"success": true, "result": null, "output": "Inspected 300
+Inspected 400
+Progress: 4/10
+STATE: inspected=[100, 200, 300, 400]
+", "error": null}, "runtime_state": {"runtime": "reset", "active_globals": [], "last_step_globals": ["batch", "inspected", "items", "start", "x"]}} --- EXAMPLE END ---
+
+--- EXAMPLE: BATCH PROCESSING ---
+Task: Process a list of numbers 3 at a time, keeping only even numbers, and report the running sum.
+
+Turn 1
+Assistant:
+
+I will process the first batch of 3 numbers. I must print my processed_count and valid_evens so I can reconstruct them later.
+
+```python
+# Setup
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+processed_count = 0
+valid_evens = []
+
+# 1. FETCH / ACT
+batch = numbers[processed_count : processed_count + 3]
+
+# 2. UPDATE STATE
+for n in batch:
+    print(f"Saw: {n}")
+    if n % 2 == 0:
+        valid_evens.append(n)
+
+processed_count += len(batch)
+current_sum = sum(valid_evens)
+
+# 3. ANALYZE & REPORT
+print(f"--- Report ---")
+print(f"Progress: {processed_count}/{len(numbers)}")
+print(f"Running Sum: {current_sum}")
+# Explicit state handoff
+print(f"STATE: processed_count={processed_count}, valid_evens={valid_evens}")
+```
+User: {"observation": {"success": true, "result": null, "output": "Saw: 1
+Saw: 2
+Saw: 3
+--- Report ---
+Progress: 3/9
+Running Sum: 2
+STATE: processed_count=3, valid_evens=[2]
+", "error": null}, "runtime_state": {"runtime": "reset", "active_globals": [], "last_step_globals": ["batch", "n", "numbers", "processed_count", "valid_evens"]}} --- EXAMPLE END ---

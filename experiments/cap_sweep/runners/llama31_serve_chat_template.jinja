@@ -1,0 +1,4 @@
+{{ bos_token }}{% for message in messages %}{% if message['role'] == 'system' %}System: {{ message['content'] | trim }}{{ eos_token }}
+{% elif message['role'] == 'user' %}User: {{ message['content'] | trim }}{{ eos_token }}
+{% elif message['role'] == 'assistant' %}Assistant: {{ message['content'] | trim }}{{ eos_token }}
+{% else %}{{ raise_exception('Only system, user, and assistant roles are supported!') }}{% endif %}{% endfor %}{% if add_generation_prompt %}Assistant: {% endif %}

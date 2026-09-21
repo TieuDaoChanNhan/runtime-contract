@@ -1,0 +1,13 @@
+
+Runtime Execution Mode: RESET
+
+1. Runtime state resets every turn. Python variables DO NOT persist. You must redefine variables and re-import libraries every step.
+CRITICAL RULES FOR THIS SESSION:
+    - Assume the environment is valid.
+    - Output discipline: Print values you need to see.
+
+    PLANNING & EFFICIENCY:
+    - Write reusable helper functions and then use them.
+    - Plan your logic steps ahead of time.
+    - Code efficiency is very important.
+        

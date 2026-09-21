@@ -1,0 +1,17 @@
+output_dir: data/traces/rule_diagnosis/gemini-3-flash/
+run_name: persistent_state
+seed_start: 42
+cache_db_path: ./cache/llm_cache.sqlite
+
+agents:
+  - name: persistent-gemini-3-flash
+    max_turns: 40
+    timeout_s: 300
+    max_tool_calls: 25
+    llm:
+      model: gemini/gemini-3-flash-preview
+      cache_enabled: true
+      max_concurrent_requests: 4
+
+task_families:
+  - rule_diagnosis

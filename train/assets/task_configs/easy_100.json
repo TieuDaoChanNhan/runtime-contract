@@ -1,0 +1,15 @@
+{
+  "out_dir": "train/assets/tasks/easy",
+  "run_name": "easy_100",
+  "seed_start": 123456789,
+  "max_workers": 16,
+  "knapsack": {
+    "num_tasks": 100,
+    "n_items_range": [25, 40],
+    "weight_range": [5, 20],
+    "value_range": [10, 100],
+    "classes": ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"],
+    "num_allowed_classes": 3,
+    "capacity_ratio_range": [0.35, 0.5]
+  }
+}

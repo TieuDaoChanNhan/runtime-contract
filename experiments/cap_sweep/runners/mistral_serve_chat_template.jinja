@@ -1,0 +1,31 @@
+{#-
+Serving-time chat template for the Mistral-7B-v0.3 knapsack LoRAs. Based on
+axolotl's built-in `mistral_v2v3` template (plain [INST] ... [/INST] with the
+native eos_token at each assistant turn end), extended with system-role
+support: mistral_v2v3 only accepts user/assistant messages, but this codebase's
+CodeAct agent sends leading system messages before the first user turn. Any
+system-role content is folded into whichever user message comes next.
+-#}
+{{ bos_token }}{%- set ns = namespace(sys_buf='', has_sys=false) -%}
+{%- for message in messages -%}
+  {%- if message['role'] == 'system' -%}
+    {%- if ns.has_sys -%}
+      {%- set ns.sys_buf = ns.sys_buf ~ '\n\n' ~ message['content'] -%}
+    {%- else -%}
+      {%- set ns.sys_buf = message['content'] -%}
+      {%- set ns.has_sys = true -%}
+    {%- endif -%}
+  {%- elif message['role'] == 'user' -%}
+    {%- if ns.has_sys -%}
+      {{ '[INST] ' + ns.sys_buf + '\n\n' + message['content'] + '[/INST]' }}
+      {%- set ns.sys_buf = '' -%}
+      {%- set ns.has_sys = false -%}
+    {%- else -%}
+      {{ '[INST] ' + message['content'] + '[/INST]' }}
+    {%- endif -%}
+  {%- elif message['role'] == 'assistant' -%}
+    {{ ' ' + message['content'] + eos_token }}
+  {%- else -%}
+    {{ raise_exception('Unsupported role: ' + message['role']) }}
+  {%- endif -%}
+{%- endfor -%}

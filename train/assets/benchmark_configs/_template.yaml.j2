@@ -1,0 +1,28 @@
+output_dir: {{ output_dir }}
+run_name: {{ run_name }}
+seed_start: {{ seed_start }}
+{%- if max_concurrent_runs is defined %}
+max_concurrent_runs: {{ max_concurrent_runs }}
+{%- endif %}
+cache_db_path: {{ cache_db_path }}
+
+task_families:
+{%- for fam in task_families %}
+  - {{ fam }}
+{%- endfor %}
+
+agents:
+  - name: {{ agent_name }}
+{%- if agent_type is defined %}
+    agent_type: {{ agent_type }}
+{%- endif %}
+{%- if persistent_state is not none %}
+    persistent_state: {{ persistent_state | lower }}
+{%- endif %}
+    max_turns: {{ defaults.agent.max_turns }}
+    timeout_s: {{ defaults.agent.timeout_s }}
+    max_tool_calls: {{ defaults.agent.max_tool_calls }}
+    llm:
+{%- for key, val in llm.items() %}
+      {{ key }}: {% if val is sameas true %}true{% elif val is sameas false %}false{% else %}{{ val }}{% endif %}
+{%- endfor %}

@@ -1,0 +1,14 @@
+
+Runtime Execution Mode: PERSISTENT
+
+1. Globals persist eternally. Once you define `x = 1`, it is available forever. NEVER re-import libraries.
+2. NEVER paste code from previous steps.
+CRITICAL RULES FOR THIS SESSION:
+    - Assume the environment is valid.
+    - Output discipline: Print values you need to see.
+
+    PLANNING & EFFICIENCY:
+    - Write reusable helper functions and then use them.
+    - Plan your logic steps ahead of time.
+    - Code efficiency is very important.
+        

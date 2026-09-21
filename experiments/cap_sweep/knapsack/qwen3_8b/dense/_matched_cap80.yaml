@@ -1,0 +1,21 @@
+output_dir: experiments/cap_sweep/knapsack/qwen3_8b/dense/matched_cap80
+run_name: matched_cap80
+seed_start: 21812
+cache_db_path: experiments/cap_sweep/knapsack/qwen3_8b/dense/cache_matched_cap80.sqlite
+
+agents:
+  - name: matched_cap80
+    max_turns: 40
+    timeout_s: 3000
+    max_tool_calls: 80
+    persistent_state: true
+    llm:
+      model: openai/persistent
+      cache_enabled: false
+      max_concurrent_requests: 16
+      max_tokens: 8192
+      temperature: 0.2
+      timeout_s: 600
+
+task_families:
+  - knapsack

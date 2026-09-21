@@ -1,0 +1,26 @@
+# Reduced-reconstruction-bandwidth navigation cell (Sec. 5 Prediction 1).
+# Identical to _nav_PP_cap25.yaml except for the task root: the same 16 graphs with
+# public.neighbors_batch_max=2, so rebuilding an n-node map costs ceil(n/2) calls instead
+# of ceil(n/50). b=2 is preselected by scripts/nav_batch_sweep.py as the only candidate
+# with substantial exposure above c=25 (E_25=0.44) and none above c=80 (E_80=0.00).
+output_dir: experiments/cap_sweep/navigation/qwen3_8b/batch2/navb2_PP_cap25
+run_name: navb2_PP_cap25
+seed_start: 21812
+cache_db_path: experiments/cap_sweep/navigation/qwen3_8b/batch2/cache_navb2_PP_cap25.sqlite
+
+agents:
+  - name: navb2_PP_cap25
+    max_turns: 40
+    timeout_s: 3000
+    max_tool_calls: 25
+    persistent_state: true
+    llm:
+      model: openai/np
+      cache_enabled: false
+      max_concurrent_requests: 16
+      max_tokens: 8192
+      temperature: 0.2
+      timeout_s: 600
+
+task_families:
+  - navigation

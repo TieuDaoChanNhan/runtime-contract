@@ -1,0 +1,46 @@
+Available tools:
+def inspect(item_id: str) -> str
+  """
+  Return the item's properties as a JSON-encoded string with exactly these keys:
+    {"weight": <int>, "value": <int>, "class": <str>}
+
+  Example:
+    inspect("item_0263322e3f1c") -> '{"class":"A","value":13,"weight":12}'
+
+  You MUST parse the returned string using `json.loads(...)` (do not use regex).
+  Example:
+    import json
+    d = json.loads(inspect(item_id))
+    weight = d["weight"]; value = d["value"]; cls = d["class"]
+
+
+  Args:
+    item_id: the opaque item id to inspect
+  """
+def take_item(item_id: str) -> None
+  """
+  Select an item for your knapsack. The environment records your selection.
+
+  Args:
+    item_id: the item id to take
+  """
+def list_items() -> str
+  """
+  Returns a list of all item IDs available for inspection.
+
+      Example:
+      list_items() -> '["A", "B", "C"]'
+        
+      Example:
+      import json
+      d = json.loads(list_items())
+
+  Args:
+  """
+def finish() -> None
+  """
+  Call when the task execution is finished
+
+  Args:
+  """
+STRICT LIMIT: Do not exceed 25 tool calls in one turn. Use loops carefully and batch your work across multiple turns if needed.

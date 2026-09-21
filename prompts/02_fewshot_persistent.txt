@@ -1,0 +1,132 @@
+--- EXAMPLE: PERSISTENT STATE ---
+Task: Store items and sum values.
+
+Turn 1
+Assistant:
+1. I will initialize the global list `items` and print its length and contents.
+```python
+items = [10, 20]
+
+def foo(items):
+    return items + items
+
+print(len(items))
+```
+User: {"observation": {"success": true, "result": null, "output": "2
+", "error": null}, "runtime_state": {"runtime": "persistent", "active_globals": ["items", "foo"], "last_step_globals": ["items", "foo"]}}
+
+Turn 2
+Assistant:
+
+I can see `items` and `foo` in active globals, so I will reuse them directly.
+
+```python
+items = foo(items)
+total = sum(items)
+print(f"Total: {total}")
+
+finish()
+```
+User: {"observation": {"success": true, "result": null, "output": "Total: 60
+", "error": null}, "runtime_state": {"runtime": "persistent", "active_globals": ["items", "foo", "total"], "last_step_globals": ["items", "foo", "total"]}} --- EXAMPLE END --- 
+
+--- EXAMPLE: ITERATIVE EXPLORATION ---
+Task: Inspect 10 items from a list, 2 at a time.
+
+Turn 1
+Assistant:
+1. I will define a helper function `batch_inspect` to handle the logic. Then I will run the first batch.
+```python
+import json
+
+# Setup data
+items = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+inspected = []
+
+def batch_inspect():
+    # Calculate indices based on current state
+    start = len(inspected)
+    # Stop if done
+    if start >= len(items):
+        print("Done!")
+        return
+        
+    # Process next 2
+    batch = items[start : start + 2]
+    for x in batch:
+        # Mock inspection logic
+        inspected.append(x)
+        print(f"Inspected {x}")
+    
+    print(f"Progress: {len(inspected)}/{len(items)}")
+
+# Run first time
+batch_inspect()
+```
+User: {"observation": {"success": true, "result": null, "output": "Inspected 100
+Inspected 200
+Progress: 2/10
+", "error": null}, "runtime_state": {"runtime": "persistent", "active_globals": ["items", "inspected", "batch_inspect"], "last_step_globals": ["items", "inspected", "batch_inspect"]}}
+
+Turn 2
+Assistant:
+
+I can see `batch_inspect` in active globals, so I will call it to process the next items.
+```python
+batch_inspect()
+```
+User: {"observation": {"success": true, "result": null, "output": "Inspected 300
+Inspected 400
+Progress: 4/10
+", "error": null}, "runtime_state": {"runtime": "persistent", "active_globals": ["items", "inspected", "batch_inspect"], "last_step_globals": ["items", "inspected", "batch_inspect"]}} ---
+
+
+--- EXAMPLE: BATCH PROCESSING ---
+Task: Process a list of numbers 3 at a time, keeping only even numbers, and report the running sum.
+
+Turn 1
+Assistant:
+1. I will define a "fat" helper function `run_step()` that handles the fetching, filtering, and reporting all in one go.
+```python
+# Setup
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+processed_count = 0
+valid_evens = []
+
+def run_step():
+    global processed_count
+    
+    # 1. FETCH / ACT
+    batch = numbers[processed_count : processed_count + 3]
+    if not batch:
+        print("Done.")
+        return
+
+    # 2. UPDATE STATE
+    for n in batch:
+        print(f"Saw: {n}")
+        if n % 2 == 0:
+            valid_evens.append(n)
+    
+    processed_count += len(batch)
+    
+    # 3. ANALYZE & REPORT (Inside the function!)
+    current_sum = sum(valid_evens)
+    print(f"--- Report ---")
+    print(f"Progress: {processed_count}/{len(numbers)}")
+    print(f"Valid Evens: {valid_evens}")
+    print(f"Running Sum: {current_sum}")
+
+# Execute first step
+run_step()
+```
+User: {"observation": {"success": true, "result": null, "output": "Saw: 1
+Saw: 2
+Saw: 3
+--- Report ---
+Progress: 3/9
+Valid Evens: [2]
+Running Sum: 2
+", "error": null}, "runtime_state": {"runtime": "persistent", "active_globals": ["numbers", "processed_count", "run_step", "valid_evens"], "last_step_globals": ["numbers", "processed_count", "run_step", "valid_evens"]}} --- EXAMPLE END ---
+
+

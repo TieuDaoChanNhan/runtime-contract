@@ -1,0 +1,93 @@
+{
+  "out_dir": "out",
+  "run_name": "hard_k_30_50",
+  "seed_start": 2000,
+  "max_workers": 16,
+  "llm": {
+    "enabled": false,
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "max_tokens": 384,
+    "timeout_s": 90,
+    "max_concurrent_requests": 8,
+    "max_retries": 8,
+    "backoff_base_s": 0.75,
+    "backoff_max_s": 45.0,
+    "jitter_s": 0.3
+  },
+  "knapsack": {
+    "num_tasks": 0,
+    "n_items_range": [
+      30,
+      50
+    ],
+    "weight_range": [
+      1,
+      25
+    ],
+    "value_range": [
+      1,
+      80
+    ],
+    "classes": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K"
+    ],
+    "num_allowed_classes": 3,
+    "capacity_ratio_range": [
+      0.28,
+      0.45
+    ]
+  },
+  "navigation": {
+    "num_tasks": 0,
+    "horizon_range": [
+      25,
+      40
+    ],
+    "extra_nodes_range": [
+      5,
+      15
+    ],
+    "extra_edge_factor_range": [
+      0.35,
+      0.6
+    ],
+    "max_steps_multiplier": 1.15,
+    "trap_prob": 0.6,
+    "probe_budget_multiplier": 0.7
+  },
+  "rule_diagnosis": {
+    "num_tasks": 400,
+    "mod_m_choices": [
+      7,
+      8,
+      9,
+      11,
+      13
+    ],
+    "domain_range": [
+      0,
+      999
+    ],
+    "probe_budget_range": [
+      55,
+      65
+    ],
+    "reveal_family_in_public": false,
+    "max_hypothesis_exceptions": 0,
+    "online": true,
+    "stream_grid_size": 32,
+    "stream_batch_size": 20,
+    "label_noise": 0.3
+  }
+}

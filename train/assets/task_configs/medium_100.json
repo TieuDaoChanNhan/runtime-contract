@@ -1,0 +1,15 @@
+{
+  "out_dir": "train/assets/tasks/medium",
+  "run_name": "medium_100",
+  "seed_start": 123456789,
+  "max_workers": 16,
+  "knapsack": {
+    "num_tasks": 100,
+    "n_items_range": [80, 120],
+    "weight_range": [5, 50],
+    "value_range": [10, 500],
+    "classes": ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"],
+    "num_allowed_classes": 5,
+    "capacity_ratio_range": [0.4, 0.6]
+  }
+}
