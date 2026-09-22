@@ -34,7 +34,11 @@ SEEDS = ["0", "777", "1337"]
 # ---------- loading ----------
 def _scores(path, fam, metric="score"):
     out = {}
-    for f in glob.glob(f"{path}/**/{fam}-{fam}-*.json", recursive=True):
+    # sorted(): glob() order is filesystem-enumeration order, not stable across a directory
+    # move/recreate -- callers that feed .values() into a seeded bootstrap (e.g. a6_dense)
+    # need list order stable regardless of that, matching their own "independent of call
+    # order" intent.
+    for f in sorted(glob.glob(f"{path}/**/{fam}-{fam}-*.json", recursive=True)):
         if f.endswith(".trace.json"):
             continue
         r = json.load(open(f)).get("result", {}) or {}
@@ -102,38 +106,20 @@ def a1():
             f"  {s:>5} {r['GPb']:>8.3f} {r['GPs']:>7.3f} {r['GPb'] - r['GPs']:>7.3f} "
             f"{r['Db']:>7.3f} {r['Ds']:>7.3f} {r['T']:>7.3f}"
         )
-    # hierarchical bootstrap of pooled T
-    seeds = list(rows)
-    Ts = []
-    for _ in range(5000):
-        bs = [seeds[random.randrange(len(seeds))] for _ in seeds]
-        st = []
-        for s in bs:
-            cb, cs = rows[s]["cb"], rows[s]["cs"]
-            nb, ns = len(cb["PP"]), len(cs["PP"])
-            ib = [random.randrange(nb) for _ in range(nb)]
-            iss = [random.randrange(ns) for _ in range(ns)]
-
-            def mb(cl, cb=cb, ib=ib, nb=nb):
-                return sum(cb[cl][i] for i in ib) / nb
-
-            def ms(cl, cs=cs, iss=iss, ns=ns):
-                return sum(cs[cl][i] for i in iss) / ns
-
-            st.append(
-                ((mb("PP") - mb("PS")) - (mb("SP") - mb("SS")))
-                - ((ms("PP") - ms("PS")) - (ms("SP") - ms("SS")))
-            )
-        Ts.append(statistics.mean(st))
-    Ts.sort()
     print(
         f"  D(cap{CAP_BIND}) 3-seed mean {statistics.mean([r['Db'] for r in rows.values()]):.3f} "
         f"(sd {statistics.pstdev([r['Db'] for r in rows.values()]):.3f}); "
         f"D(cap{CAP_SLACK}) mean {statistics.mean([r['Ds'] for r in rows.values()]):.3f}"
     )
+    # The pooled T interval is NOT computed here. This function once ran a hierarchical
+    # bootstrap that drew a separate task resample inside each seed and each cap, which is not
+    # the crossed, cap-paired procedure the paper describes and uses. The published interval
+    # comes from build_interaction() in scripts/build_paper_numbers.py, which selects the common
+    # task grid and reuses one resampled task vector across the selected seeds and both caps.
+    # Run `make paper-numbers` for it; the per-seed rows above stay descriptive.
     print(
-        f"  pooled T = {statistics.mean(Ts):+.3f}  hierarchical-bootstrap 95% CI "
-        f"[{Ts[125]:+.3f}, {Ts[4874]:+.3f}]  excludes 0: {Ts[125] > 0}\n"
+        "  pooled T interval: see build_interaction() in scripts/build_paper_numbers.py "
+        "(make paper-numbers)\n"
     )
 
 

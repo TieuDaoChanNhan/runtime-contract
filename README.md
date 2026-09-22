@@ -114,12 +114,12 @@ Hugging Face. Scripts under `experiments/cap_sweep/` need `PERSISTENT_LORA` / `S
 **Evaluation data** — every cell the paper reports, grouped by task family, each with its per-task
 results and traces, its harness summary and the benchmark config it ran under:
 
-* <https://huggingface.co/datasets/runtime-contracts/cap-sweep-eval-data>
+* <https://huggingface.co/datasets/runtime-contracts/evaluation-traces>, revision `378805a69a6a6c0f628bdf9626491a2e48a8b368`
 
 **Training traces** — the teacher agent traces (three task families x persistent/stateless) the
 adapters below are fine-tuned on:
 
-* <https://huggingface.co/datasets/runtime-contracts/cap-sweep-training-traces>
+* <https://huggingface.co/datasets/runtime-contracts/teacher-traces>, revision `597f91c680a2cb7dc7aa9a6a1380f1b1300683cc`
 
 **Qwen3-8B knapsack LoRA adapters** (three independently trained seeds):
 
@@ -154,9 +154,15 @@ family from scratch, which needs `LORA_MODULES` pointed at your own copy.
 that produced it:
 
 ```bash
-# unpack the evaluation-data mirror into experiments/cap_sweep/, preserving its
-# directory structure; nothing else to map.
+# Pull the evaluation data at the revision the paper pins, straight into the tree.
+# Nothing else to map: the dataset's directory structure is this one.
+hf download runtime-contracts/evaluation-traces --repo-type dataset \
+  --revision 378805a69a6a6c0f628bdf9626491a2e48a8b368 \
+  --local-dir experiments/cap_sweep
 ```
+
+Pin the revision. The paper's appendix cites these exact SHAs, and an unpinned download will
+track the dataset's `main` if it is ever re-uploaded.
 
 `experiments/cap_sweep/README.md` lists every cell, what it establishes in the paper, and which
 script reads it.
@@ -164,13 +170,16 @@ script reads it.
 ### Running the analyses
 
 ```bash
-# Sec. 4 estimands (D, T, model selection M, dense log-c trend) and the Sec. 5
-# mechanism tables, printed to stdout. No GPU.
-uv run python scripts/analyze_paper.py
-
-# Single entry point behind the manuscript: recomputes every cited number into
-# paper/numbers.json, from which the text and tables are rendered.
+# The canonical entry point. Recomputes every cited number, including the
+# published T interval, into paper/numbers.json, from which the text and tables
+# are rendered. No GPU.
 mkdir -p paper && uv run python -m scripts.build_paper_numbers
+
+# Per-seed descriptive rows for the Sec. 4 estimands (D, model selection M, dense
+# log-c trend) and the Sec. 5 mechanism tables, printed to stdout. This does not
+# compute the pooled T interval: that comes from build_interaction() above, which
+# runs the crossed, cap-paired bootstrap the paper describes.
+uv run python scripts/analyze_paper.py
 
 # Replication arms: 2nd rollout + Mistral-7B-v0.3 + Llama-3.1-8B.
 uv run python scripts/rollout_variance.py --arms qwen,mistral,llama31
