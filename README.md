@@ -258,7 +258,7 @@ make traces-stateless-rule      # rule diagnosis, stateless runtime
 ```
 
 Pairing equalizes *which* instances are used, not trace length: stateless traces rebuild state and
-run about 2.3× longer, which is why cross-adapter contrasts are read as bundled.
+run about 2.3× longer, which is why cross-adapter comparisons are read as bundled.
 
 ### 4. Trace statistics
 
