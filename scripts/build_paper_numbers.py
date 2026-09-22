@@ -283,6 +283,13 @@ def build_training():
         "tok_ratio": 2.3,
         "tok_max_stateless_k": 16.2,
         "tok_max_persistent_k": 12.9,
+        # Truncation incidence in the released Opaque Knapsack training sets
+        # (huggingface.co/datasets/runtime-contracts/teacher-traces, data/knapsack/*/traces.jsonl).
+        # A prepared trace shows truncation when dataloader.truncate_messages masked an observation
+        # ("[... Output Omitted for Brevity ...]") or dropped a middle turn, the latter visible as
+        # two consecutive messages with the same role. Counted over 1,000 traces per runtime.
+        "trunc_stateless": 117,
+        "trunc_persistent": 0,
         "turns_mean_stateless": 6.1,
         "turns_mean_persistent": 4.3,
         "turns_max_stateless": 14,
@@ -1048,6 +1055,149 @@ def build_context():
     return out
 
 
+def build_horizon_audit(root="experiments/cap_sweep/knapsack/qwen3_8b/main"):
+    """Separate attempted model turns from logged steps (review v36 item 1).
+
+    CodeAct.run spends one iteration of its max_num_turns loop on every model call, including
+    calls that raise and completions rejected for finish_reason != "stop" (codeact/agent.py,
+    the two continue branches before the StepEvent emit). Neither branch emits a StepEvent and
+    neither reaches the total_usage increment, so a trace summary counts accepted calls only:
+    num_steps + failed + rejected == T_max for an episode that ends at the horizon. Executed
+    action blocks are the subset of steps that carried code, since a step can log an empty one.
+    """
+    out = {}
+    for cap in (CB, CS):
+        for cell in ("PP", "PS", "SP", "SS"):
+            eps = []
+            for t in glob.glob(
+                f"{root}/{cell}_cap{cap}/**/{KFAM}-{KFAM}-*.trace.json", recursive=True
+            ):
+                tr = _load(t)
+                s = tr.get("summary", {}) or {}
+                errs = [str(e) for e in (s.get("errors") or [])]
+                steps = [
+                    e for e in tr.get("events", []) if e.get("type") == "StepEvent"
+                ]
+                eps.append(
+                    {
+                        "steps": s.get("num_steps") or len(steps),
+                        "blocks": sum(
+                            1
+                            for e in steps
+                            if ((e.get("data") or {}).get("code") or "").strip()
+                        ),
+                        "failed": sum(
+                            1 for e in errs if e.startswith("LLM Call Failed")
+                        ),
+                        "ctx": sum(1 for e in errs if "ContextWindowExceeded" in e),
+                        "rejected": sum(
+                            1 for e in errs if e.startswith("LLM ended unexpectedly")
+                        ),
+                        "turnlimit": s.get("finish_reason") == "max_turns",
+                    }
+                )
+            if not eps:
+                continue
+            tl = [e for e in eps if e["turnlimit"]]
+            out[f"{cell}{cap}"] = {
+                "n": len(eps),
+                "attempted": statistics.mean(
+                    e["steps"] + e["failed"] + e["rejected"] for e in eps
+                ),
+                "steps": statistics.mean(e["steps"] for e in eps),
+                "blocks": statistics.mean(e["blocks"] for e in eps),
+                "failed": sum(e["failed"] for e in eps),
+                "failed_ctx": sum(e["ctx"] for e in eps),
+                "rejected": sum(e["rejected"] for e in eps),
+                "eps_affected": sum(1 for e in eps if e["failed"] or e["rejected"]),
+                "turnlimit_n": len(tl),
+                "turnlimit_exact": sum(
+                    1 for e in tl if e["steps"] + e["failed"] + e["rejected"] == A.MAXT
+                ),
+            }
+    return out
+
+
+def _control_amp(sc, common, matched, mismatched):
+    """Paired cap amplification of one runtime gap, over the common task grid."""
+    random.seed(0)
+    d = [
+        (sc[(matched, CB)][k] - sc[(mismatched, CB)][k])
+        - (sc[(matched, CS)][k] - sc[(mismatched, CS)][k])
+        for k in common
+    ]
+    lo, hi = A._bootci(d)
+    return statistics.mean(d), lo, hi
+
+
+def build_controls(root="experiments/cap_sweep", bases=None):
+    """The control tasks' outcomes, not only their exposure (review v36 item 3).
+
+    tab:crosstask reports exposure and restart rates for Navigation and Rule Diagnosis, which is
+    not the quality behind the claim that neither shows a mismatch-specific response. This emits
+    the full train x runtime factorial at both caps, the paired cap amplification for the
+    persistent-trained and the stateless-trained agent, and the per-episode cost that the
+    statement about token usage rests on.
+
+    bases overrides the subtree the per-task result files are read from, for a checkout whose
+    cells sit in a flat staging directory. The per-cell summaries, which carry the cost columns,
+    are always read from the released layout.
+    """
+    specs = [
+        ("nav", "navigation/qwen3_8b/main", "nav_", "navigation"),
+        ("rule", "rule_diagnosis/qwen3_8b/main", "rule_", "rule_diagnosis"),
+    ]
+    random.seed(0)
+    out = {}
+    for name, base, pfx, fam in specs:
+        sbase = (bases or {}).get(name, base)
+        sc = {
+            (cl, cap): A._scores(f"{root}/{sbase}/{pfx}{cl}_cap{cap}", fam)
+            for cl in ("PP", "PS", "SP", "SS")
+            for cap in (CB, CS)
+        }
+        if not all(sc.values()):
+            continue
+        common = sorted(set.intersection(*[set(v) for v in sc.values()]))
+        q = {}
+        cost = {}
+        for cl in ("PP", "PS", "SP", "SS"):
+            q[cl] = {}
+            cost[cl] = {}
+            for tag, cap in (("bind", CB), ("slack", CS)):
+                q[cl][tag] = statistics.mean(sc[(cl, cap)][k] for k in common)
+                sm = sorted(
+                    glob.glob(
+                        f"{root}/{base}/{pfx}{cl}_cap{cap}/**/summary_*.json",
+                        recursive=True,
+                    )
+                )
+                d = _load(sm[0]) if sm else {}
+                cost[cl][tag] = {
+                    "tokens_k": (d.get("average_total_tokens") or 0) / 1000,
+                    "turns": d.get("average_steps"),
+                }
+        # The persistent-trained agent's amplification is already published from
+        # build_mechanism (mechanism.nav.AP, mechanism.rule_score.AP) over this same grid, so it
+        # is not recomputed here: two bootstraps of the same estimand would disagree in the
+        # second decimal purely through their draws. Only the stateless-trained agent's
+        # amplification is new.
+        a_s, as_lo, as_hi = _control_amp(sc, common, "SS", "SP")
+        out[name] = {
+            "n": len(common),
+            "q": q,
+            "cost": cost,
+            "GP_bind": q["PP"]["bind"] - q["PS"]["bind"],
+            "GP_slack": q["PP"]["slack"] - q["PS"]["slack"],
+            "GS_bind": q["SS"]["bind"] - q["SP"]["bind"],
+            "GS_slack": q["SS"]["slack"] - q["SP"]["slack"],
+            "AS": a_s,
+            "AS_ci_lo": as_lo,
+            "AS_ci_hi": as_hi,
+        }
+    return out
+
+
 def build_operational():
     import re
 
@@ -1415,11 +1565,13 @@ def main():
         "mechanism": build_mechanism(),
         "progress": build_progress(),
         "context": build_context(),
+        "horizon": build_horizon_audit(),
         "replay": build_replay(),
         "exposure": build_exposure(),
         "bandwidth": build_bandwidth(),
         "checkpoint": build_checkpoint(),
         "arms": build_arms(),
+        "controls": build_controls(),
     }
     n["figures"] = build_figures(n)
     out = os.path.join("paper", "numbers.json")
